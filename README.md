@@ -1,4 +1,4 @@
-Hi and welcome to Studi!
+Hi and Welcome to Studi!
 
 We are developing a mobile app designed to foster academic community through gamification. 
 This platform will enable students to log their study sessions (location, subject matter, and duration) in a shared social environment. 
