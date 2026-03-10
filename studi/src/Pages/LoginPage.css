@@ -1,0 +1,64 @@
+/* Login Page UI */
+.img {
+  width: 300px;
+  height: 300px;
+  background-image: url('/src/assets/studiLogo.jpg');
+  background-position: center;
+  background-size: contain;
+  justify-content: center;
+}
+
+h1{
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #2e7d71;
+
+  
+}
+
+.login-page {
+  background-color: white;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.login-card {
+  width: 400px;
+  padding: 50px;
+  background: white;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 10px;
+  color: #2e7d71;
+  font-size: 16px;
+}
+
+.login-card .button1 {
+  width: 100%;
+  padding: 10px;
+  background-color:#3d8a96;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.login-card .button2 {
+  width: 100%;
+  padding: 8px;
+  color: white;
+  background-color:rgb(124, 181, 188);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+}
