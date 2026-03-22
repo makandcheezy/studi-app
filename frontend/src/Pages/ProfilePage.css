@@ -1,0 +1,111 @@
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-card {
+  background: white;
+  border: 1px solid #e8efee;
+  border-radius: 30px;
+  padding: 24px;
+}
+
+.profile-header {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2e7d71;
+  margin-bottom: 6px;
+}
+
+.profile-edit-heading,
+.profile-stats-heading,
+.profile-achievements-heading {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #2e7d71;
+  margin-bottom: 16px;
+}
+
+.profile-info,
+.profile-stats-info {
+  margin-top: 12px;
+}
+
+.profile-info-row,
+.profile-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf3f2;
+}
+
+.profile-info-row:last-child,
+.profile-stat-row:last-child {
+  border-bottom: none;
+}
+
+.profile-info-data,
+.profile-stats-data {
+  font-weight: 700;
+  color: #2e7d71;
+}
+
+.profile-edit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-edit-data {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-edit-data label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2f3441;
+}
+
+.profile-edit-data input,
+.profile-edit-data select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dbe8e6;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #2f3441;
+  background: white;
+  font-family: inherit;
+}
+
+.profile-edit-data input:focus,
+.profile-edit-data select:focus {
+  outline: none;
+  border-color: #3d8a96;
+}
+
+.profile-btn {
+  width: fit-content;
+  background: #3d8a96;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.profile-achievement-info {
+  margin-top: 10px;
+  padding: 28px 20px;
+  border-radius: 20px;
+  background: #f8fbfb;
+  border: 1px dashed #d5e7e4;
+  text-align: center;
+  list-style: none;
+  color: #7b8794;
+}
