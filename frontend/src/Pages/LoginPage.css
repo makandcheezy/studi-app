@@ -62,3 +62,9 @@ h1{
   border-radius: 6px;
   font-size: 12px;
 }
+.login-message {
+  font-size: 14px;
+  color: #2e7d71;
+  text-align: center;
+  margin-top: 8px;
+}
