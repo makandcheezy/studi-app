@@ -1,4 +1,4 @@
-import "./LeaderboardPage.css";
+import "./Leaderboard.css";
 
 export default function LeaderboardPage() {
   return (
