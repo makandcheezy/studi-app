@@ -17,7 +17,7 @@ const getLeaderboard = async (req, res, next) => {
 
 const getFriendsLeaderboard = async (req, res, next) => {
   try {
-    const result = await leaderboardService.getFriendsLeaderboard(req.user.userId, {
+    const result = await leaderboardService.getFriendsLeaderboard(req.user.id, {
       period: req.query.period,
       page: req.query.page,
       limit: req.query.limit,
@@ -30,7 +30,7 @@ const getFriendsLeaderboard = async (req, res, next) => {
 
 const getUserRank = async (req, res, next) => {
   try {
-    const result = await leaderboardService.getUserRank(req.user.userId, {
+    const result = await leaderboardService.getUserRank(req.user.id, {
       period: req.query.period,
     });
     res.json({ success: true, data: result });

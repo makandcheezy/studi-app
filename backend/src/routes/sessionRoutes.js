@@ -5,25 +5,8 @@ const { body, param, query } = require('express-validator');
 const { protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const sessionController = require('../controllers/sessionController');
-const User = require('../models/User');
 
-// router.use(protect); // TODO: re-enable after auth is wired up
-// fake user middleware — uses first seed user so session endpoints have req.user
-router.use(async (req, res, next) => {
-  try {
-    const user = await User.findOne({ email: 'alex@test.com' });
-    if (!user) {
-      return res.status(500).json({
-        success: false,
-        error: { message: 'No seed user found — run: node src/utils/seed.js' },
-      });
-    }
-    req.user = { userId: user._id };
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
+router.use(protect);
 
 router.post(
   '/',
