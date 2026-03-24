@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Login from "./Pages/LoginPage";
 import Home from "./Pages/HomePage";
@@ -10,6 +10,11 @@ import Friends from "./Pages/FriendsPage";
 import BottomNav from "./components/BottomNav";
 import "./App.css";
 
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("studi_token");
+  return token ? children : <Navigate to="/" replace />;
+}
+
 function AppContent() {
   const location = useLocation();
   const hideNav = location.pathname === "/";
@@ -19,11 +24,11 @@ function AppContent() {
       <main className="page-content">
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/sessions" element={<Sessions />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/friends" element={<Friends />} />
+          <Route path="/home"        element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/profile"     element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/sessions"    element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
+          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+          <Route path="/friends"     element={<ProtectedRoute><Friends /></ProtectedRoute>} />
         </Routes>
       </main>
       {!hideNav && <BottomNav />}

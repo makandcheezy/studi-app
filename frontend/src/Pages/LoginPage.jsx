@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login, register, setToken } from "../services/api";
 import "./LoginPage.css";
 
 export default function Login() {
@@ -7,44 +8,45 @@ export default function Login() {
 
   const [isSignup, setIsSignup] = useState(false);
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-
-    if (!storedUser) {
-      setMessage("No account found. Please sign up first.");
-      return;
-    }
-
-    if (username === storedUser.username && password === storedUser.password) {
-      setMessage("");
+  const handleLogin = async () => {
+    setIsLoading(true);
+    setMessage("");
+    const result = await login({ email, password });
+    setIsLoading(false);
+    if (result?.success) {
+      setToken(result.data.accessToken);
       navigate("/home");
     } else {
-      setMessage("Invalid username or password.");
+      setMessage(result?.error?.message || "Login failed. Please try again.");
     }
   };
 
-  const handleSignUp = () => {
-    if (username === "" || password === "" || confirmPassword === "") {
+  const handleSignUp = async () => {
+    if (!email || !displayName || !password || !confirmPassword) {
       setMessage("Please fill in all fields.");
       return;
     }
-
     if (password !== confirmPassword) {
       setMessage("Passwords do not match.");
       return;
     }
-
-    const user = { username, password };
-    localStorage.setItem("user", JSON.stringify(user));
-
-    setMessage("Account created! You can now log in.");
-    setIsSignup(false);
-    setConfirmPassword("");
+    setIsLoading(true);
+    setMessage("");
+    const result = await register({ email, password, displayName });
+    setIsLoading(false);
+    if (result?.success) {
+      setToken(result.data.accessToken);
+      navigate("/home");
+    } else {
+      setMessage(result?.error?.message || "Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -54,11 +56,20 @@ export default function Login() {
         <div className="img"></div>
 
         <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
+
+        {isSignup && (
+          <input
+            type="text"
+            placeholder="Display Name"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+        )}
 
         <input
           type="password"
@@ -78,8 +89,8 @@ export default function Login() {
 
         {!isSignup ? (
           <>
-            <button className="button1" onClick={handleLogin}>
-              Login
+            <button className="button1" onClick={handleLogin} disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
             </button>
 
             <button className="button2" onClick={() => {
@@ -91,8 +102,8 @@ export default function Login() {
           </>
         ) : (
           <>
-            <button className="button1" onClick={handleSignUp}>
-              Create Account
+            <button className="button1" onClick={handleSignUp} disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Create Account"}
             </button>
 
             <button className="button2" onClick={() => {
