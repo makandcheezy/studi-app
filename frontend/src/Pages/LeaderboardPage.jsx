@@ -23,7 +23,6 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     let ignore = false;
-    setLoading(true);
 
     getLeaderboard(period).then((res) => {
       if (ignore) return;
@@ -50,7 +49,7 @@ export default function LeaderboardPage() {
             <button
               key={p.key}
               className={`leaderboard-tab ${period === p.key ? "active" : ""}`}
-              onClick={() => setPeriod(p.key)}
+              onClick={() => { setLoading(true); setPeriod(p.key); }}
             >
               {p.label}
             </button>
