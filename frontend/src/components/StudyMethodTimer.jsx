@@ -1,4 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  createSession,
+  pauseSession as apiPause,
+  resumeSession as apiResume,
+  endSession as apiEnd,
+} from "../services/api";
 
 const STUDY_METHODS = [
   { id: "dev-phase", label: "Dev Phase", focusMinutes: 0.5, breakMinutes: 10 / 60 },
@@ -29,6 +35,7 @@ export default function StudyMethodTimer({ onLogSession }) {
   const [phase, setPhase] = useState("focus");
   const [isRunning, setIsRunning] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [backendSessionId, setBackendSessionId] = useState(null);
   const defaultMethod =
     STUDY_METHODS.find((method) => method.id === "pomodoro") ?? STUDY_METHODS[0];
 
@@ -68,7 +75,11 @@ export default function StudyMethodTimer({ onLogSession }) {
     return () => clearInterval(intervalId);
   }, [isRunning, phase, selectedMethod]);
 
-  const resetTimerState = () => {
+  const resetTimerState = async () => {
+    if (backendSessionId) {
+      await apiEnd(backendSessionId);
+      setBackendSessionId(null);
+    }
     setShowResetConfirm(false);
     setIsRunning(false);
     setPhase("focus");
@@ -89,10 +100,15 @@ export default function StudyMethodTimer({ onLogSession }) {
     setShowResetConfirm(true);
   };
 
-  const handleMethodChange = (event) => {
+  const handleMethodChange = async (event) => {
     const nextMethodId = event.target.value;
     const nextMethod =
       STUDY_METHODS.find((method) => method.id === nextMethodId) ?? STUDY_METHODS[0];
+
+    if (backendSessionId) {
+      await apiEnd(backendSessionId);
+      setBackendSessionId(null);
+    }
 
     setMethodId(nextMethodId);
     setShowResetConfirm(false);
@@ -101,25 +117,21 @@ export default function StudyMethodTimer({ onLogSession }) {
     setTimeRemaining(getPhaseSeconds("focus", nextMethod));
   };
 
-  const handleLogSession = () => {
-    const trimmedName = sessionName.trim();
-    const trimmedSubject = subject.trim();
+  const handleLogSession = async () => {
+    if (!backendSessionId) return;
 
-    if (!trimmedName || !trimmedSubject) return;
+    const res = await apiEnd(backendSessionId);
+    if (res && res.success) {
+      onLogSession(res.data.session);
+    }
 
-    onLogSession({
-      id: Date.now(),
-      sessionName: trimmedName,
-      subject: trimmedSubject,
-      durationSeconds: selectedMethod.focusMinutes * 60,
-      durationLabel: formatMethodDuration(selectedMethod.focusMinutes),
-      source: selectedMethod.label,
-      createdAt: new Date().toISOString(),
-    });
-
+    setBackendSessionId(null);
     setSessionName("");
     setSubject("");
-    resetTimerState();
+    setShowResetConfirm(false);
+    setIsRunning(false);
+    setPhase("focus");
+    setTimeRemaining(getPhaseSeconds("focus", selectedMethod));
   };
 
   return (
@@ -168,16 +180,48 @@ export default function StudyMethodTimer({ onLogSession }) {
       </div>
 
       <div className="sessions-timer-controls">
-        <button type="button" className="sessions-primary-btn" onClick={() => setIsRunning(true)}>
-          Start
+        <button
+          type="button"
+          className="sessions-primary-btn"
+          disabled={!subject.trim()}
+          onClick={async () => {
+            if (!backendSessionId) {
+              // first start — create backend session
+              const res = await createSession({ subject: subject.trim() });
+              if (res && res.success) {
+                setBackendSessionId(res.data.session._id);
+              }
+            } else {
+              // resume from pause
+              await apiResume(backendSessionId);
+            }
+            setIsRunning(true);
+          }}
+        >
+          {backendSessionId && !isRunning ? "Resume" : "Start"}
         </button>
-        <button type="button" className="sessions-primary-btn" onClick={() => setIsRunning(false)}>
+        <button
+          type="button"
+          className="sessions-primary-btn"
+          disabled={!isRunning}
+          onClick={async () => {
+            if (backendSessionId) {
+              await apiPause(backendSessionId);
+            }
+            setIsRunning(false);
+          }}
+        >
           Pause
         </button>
         <button type="button" className="sessions-primary-btn" onClick={handleResetClick}>
           Reset
         </button>
-        <button type="button" className="sessions-primary-btn" onClick={handleLogSession}>
+        <button
+          type="button"
+          className="sessions-primary-btn"
+          disabled={!backendSessionId}
+          onClick={handleLogSession}
+        >
           Finish & Log
         </button>
       </div>

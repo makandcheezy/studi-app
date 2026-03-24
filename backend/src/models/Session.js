@@ -40,6 +40,10 @@ const sessionSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    pausedAt: {
+      type: Date,
+      default: null,
+    },
     pointsEarned: {
       type: Number,
       required: true,
