@@ -47,7 +47,7 @@ async function seed() {
     {
       email: 'alex@test.com',
       passwordHash: 'placeholder',
-      displayName: 'Alex Chen',
+      displayName: 'Adam Makled',
       currentStreak: 10,
       longestStreak: 14,
       lastStudyDate: daysAgo(0),
@@ -55,7 +55,7 @@ async function seed() {
     {
       email: 'jordan@test.com',
       passwordHash: 'placeholder',
-      displayName: 'Jordan Lee',
+      displayName: 'Yusra Hashami',
       currentStreak: 5,
       longestStreak: 8,
       lastStudyDate: daysAgo(1),
@@ -63,7 +63,7 @@ async function seed() {
     {
       email: 'sam@test.com',
       passwordHash: 'placeholder',
-      displayName: 'Sam Rivera',
+      displayName: 'Shayla Pham',
       currentStreak: 2,
       longestStreak: 6,
       lastStudyDate: daysAgo(0),
@@ -71,7 +71,7 @@ async function seed() {
     {
       email: 'taylor@test.com',
       passwordHash: 'placeholder',
-      displayName: 'Taylor Kim',
+      displayName: 'Seth Jones',
       currentStreak: 0,
       longestStreak: 5,
       lastStudyDate: daysAgo(7),

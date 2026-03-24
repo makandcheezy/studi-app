@@ -4,6 +4,10 @@ const sessionService = require('../services/sessionService');
 
 const startSession = async (req, res, next) => {
   try {
+    if (req.body.durationMinutes) {
+      const result = await sessionService.createManualSession(req.user.userId, req.body);
+      return res.status(201).json({ success: true, data: result });
+    }
     const session = await sessionService.startSession(req.user.userId, req.body);
     res.status(201).json({ success: true, data: { session } });
   } catch (err) {

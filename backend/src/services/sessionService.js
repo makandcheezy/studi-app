@@ -100,17 +100,14 @@ async function endSession(sessionId, userId) {
 
   const now = new Date();
 
-  // if currently paused, accumulate final pause duration
   if (session.status === 'paused' && session.pausedAt) {
     const pausedMs = now.getTime() - session.pausedAt.getTime();
     session.pausedDuration += pausedMs / (1000 * 60);
   }
 
-  // calculate active study time
   const totalMinutes = (now.getTime() - session.startTime.getTime()) / (1000 * 60);
   const durationMinutes = Math.round(Math.max(0, totalMinutes - session.pausedDuration));
 
-  // get user for streak calculation
   const user = await User.findById(userId);
   if (!user) {
     const err = new Error('User not found');
@@ -119,11 +116,10 @@ async function endSession(sessionId, userId) {
     throw err;
   }
 
-  // compute new streak first, then use it for point calculation
+  // streak first, then points — order matters
   const { currentStreak: newStreak } = computeStreakUpdate(user.lastStudyDate, user.currentStreak);
   const pointsEarned = calculatePoints(durationMinutes, newStreak);
 
-  // complete the session
   session.status = 'completed';
   session.endTime = now;
   session.durationMinutes = durationMinutes;
@@ -132,6 +128,55 @@ async function endSession(sessionId, userId) {
   await session.save();
 
   // update user stats only for qualifying sessions (5+ min)
+  if (durationMinutes >= 5) {
+    const longestStreak = Math.max(newStreak, user.longestStreak);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $inc: { totalPoints: pointsEarned },
+        $set: { currentStreak: newStreak, longestStreak, lastStudyDate: now },
+      },
+      { new: true }
+    );
+
+    return {
+      session,
+      userStats: {
+        totalPoints: updatedUser.totalPoints,
+        currentStreak: updatedUser.currentStreak,
+        longestStreak: updatedUser.longestStreak,
+      },
+    };
+  }
+
+  return { session, userStats: null };
+}
+
+async function createManualSession(userId, { subject, durationMinutes }) {
+  const now = new Date();
+
+  const user = await User.findById(userId);
+  if (!user) {
+    const err = new Error('User not found');
+    err.statusCode = 404;
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  const { currentStreak: newStreak } = computeStreakUpdate(user.lastStudyDate, user.currentStreak);
+  const pointsEarned = calculatePoints(durationMinutes, newStreak);
+
+  const session = await Session.create({
+    userId,
+    subject,
+    startTime: now,
+    endTime: now,
+    status: 'completed',
+    durationMinutes,
+    pointsEarned,
+  });
+
+  // update user stats for qualifying sessions (5+ min)
   if (durationMinutes >= 5) {
     const longestStreak = Math.max(newStreak, user.longestStreak);
     const updatedUser = await User.findByIdAndUpdate(
@@ -192,5 +237,6 @@ module.exports = {
   pauseSession,
   resumeSession,
   endSession,
+  createManualSession,
   getSessionHistory,
 };

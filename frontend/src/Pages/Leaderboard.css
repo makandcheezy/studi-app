@@ -1,0 +1,92 @@
+.leaderboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.leaderboard-card {
+  background: white;
+  border: 1px solid #e8efee;
+  border-radius: 30px;
+  padding: 24px;
+}
+
+.leaderboard-header {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2e7d71;
+}
+
+.leaderboard-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.leaderboard-tab {
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #c6d9d6;
+  background: white;
+  color: #2f3441;
+  font-family: inherit;
+  transition: 0.2s ease;
+}
+
+.leaderboard-tab:hover {
+  background: #f6fbfa;
+}
+
+.leaderboard-tab.active {
+  background: #3d8a96;
+  color: white;
+  border-color: #3d8a96;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #f8fbfb;
+  border: 1px solid #e0eeec;
+  border-radius: 16px;
+}
+
+.leaderboard-rank {
+  font-size: 1.1rem;
+  font-weight: 800;
+  min-width: 48px;
+}
+
+.leaderboard-name {
+  flex: 1;
+  font-weight: 600;
+  color: #2f3441;
+}
+
+.leaderboard-points {
+  font-weight: 700;
+  color: #2e7d71;
+}
+
+.leaderboard-empty {
+  padding: 32px 20px;
+  border-radius: 20px;
+  background: #f8fbfb;
+  border: 1px dashed #d5e7e4;
+  text-align: center;
+}
+
+.leaderboard-muted {
+  color: #7b8794;
+}
