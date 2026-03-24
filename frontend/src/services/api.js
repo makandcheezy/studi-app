@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "/api";
 
 // ---- TOKEN HELPERS ----
 export const getToken = () => localStorage.getItem("studi_token");
@@ -42,3 +42,19 @@ export const createSession = (sessionData) =>
 
 export const getSessions = () =>
   request("/sessions");
+
+export const getActiveSession = () =>
+  request('/sessions/active');
+
+export const pauseSession = (id) =>
+  request(`/sessions/${id}/pause`, 'PATCH');
+
+export const resumeSession = (id) =>
+  request(`/sessions/${id}/resume`, 'PATCH');
+
+export const endSession = (id) =>
+  request(`/sessions/${id}/end`, 'PATCH');
+
+// ---- LEADERBOARD ----
+export const getLeaderboard = (period = "weekly", page = 1, limit = 20) =>
+  request(`/leaderboard?period=${period}&page=${page}&limit=${limit}`);
