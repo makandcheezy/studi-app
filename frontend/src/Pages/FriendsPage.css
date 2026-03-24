@@ -1,0 +1,33 @@
+.friends-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.friends-card {
+  background: white;
+  border: 1px solid #e8efee;
+  border-radius: 30px;
+  padding: 24px;
+}
+
+.friends-header,
+.friends-section-title {
+  color: #2e7d71;
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.friends-header {
+  font-size: 2rem;
+}
+
+.friends-section-title {
+  font-size: 1.4rem;
+}
+
+.friends-muted {
+  margin: 0;
+  color: #7b8794;
+  line-height: 1.5;
+}
