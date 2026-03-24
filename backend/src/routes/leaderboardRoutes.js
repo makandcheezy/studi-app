@@ -6,7 +6,7 @@ const { protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const leaderboardController = require('../controllers/leaderboardController');
 
-// router.use(protect); // TODO: re-enable after auth is wired up
+router.use(protect);
 
 const periodCheck = query('period')
   .optional()

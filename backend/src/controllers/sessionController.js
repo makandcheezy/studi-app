@@ -5,10 +5,10 @@ const sessionService = require('../services/sessionService');
 const startSession = async (req, res, next) => {
   try {
     if (req.body.durationMinutes) {
-      const result = await sessionService.createManualSession(req.user.userId, req.body);
+      const result = await sessionService.createManualSession(req.user.id, req.body);
       return res.status(201).json({ success: true, data: result });
     }
-    const session = await sessionService.startSession(req.user.userId, req.body);
+    const session = await sessionService.startSession(req.user.id, req.body);
     res.status(201).json({ success: true, data: { session } });
   } catch (err) {
     next(err);
@@ -17,7 +17,7 @@ const startSession = async (req, res, next) => {
 
 const getActiveSession = async (req, res, next) => {
   try {
-    const session = await sessionService.getActiveSession(req.user.userId);
+    const session = await sessionService.getActiveSession(req.user.id);
     res.json({ success: true, data: { session } });
   } catch (err) {
     next(err);
@@ -26,7 +26,7 @@ const getActiveSession = async (req, res, next) => {
 
 const pauseSession = async (req, res, next) => {
   try {
-    const session = await sessionService.pauseSession(req.params.id, req.user.userId);
+    const session = await sessionService.pauseSession(req.params.id, req.user.id);
     res.json({ success: true, data: { session } });
   } catch (err) {
     next(err);
@@ -35,7 +35,7 @@ const pauseSession = async (req, res, next) => {
 
 const resumeSession = async (req, res, next) => {
   try {
-    const session = await sessionService.resumeSession(req.params.id, req.user.userId);
+    const session = await sessionService.resumeSession(req.params.id, req.user.id);
     res.json({ success: true, data: { session } });
   } catch (err) {
     next(err);
@@ -44,7 +44,7 @@ const resumeSession = async (req, res, next) => {
 
 const endSession = async (req, res, next) => {
   try {
-    const result = await sessionService.endSession(req.params.id, req.user.userId);
+    const result = await sessionService.endSession(req.params.id, req.user.id);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -53,7 +53,7 @@ const endSession = async (req, res, next) => {
 
 const getSessionHistory = async (req, res, next) => {
   try {
-    const result = await sessionService.getSessionHistory(req.user.userId, req.query);
+    const result = await sessionService.getSessionHistory(req.user.id, req.query);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
