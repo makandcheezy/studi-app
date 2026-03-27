@@ -1,33 +1,52 @@
 // friend endpoints — requests, accept/decline, friends list, activity (US-7)
 const express = require('express');
 const router = express.Router();
+const { body, param, query } = require('express-validator');
+const { protect } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const friendController = require('../controllers/friendController');
 
-router.post('/request', (req, res) => {
-  res.json({ success: true, data: { message: 'send friend request placeholder' } });
-});
+router.use(protect);
 
-router.get('/', (req, res) => {
-  res.json({ success: true, data: { message: 'get friends list placeholder' } });
-});
+router.get(
+  '/search',
+  query('q').trim(),
+  validate,
+  friendController.searchUsers
+);
 
-router.get('/requests', (req, res) => {
-  res.json({ success: true, data: { message: 'get pending requests placeholder' } });
-});
+router.post(
+  '/request',
+  body('recipientId').isMongoId().withMessage('Valid recipientId is required'),
+  validate,
+  friendController.sendFriendRequest
+);
 
-router.get('/activity', (req, res) => {
-  res.json({ success: true, data: { message: 'get friend activity placeholder' } });
-});
+router.get('/', friendController.getFriends);
 
-router.patch('/:id/accept', (req, res) => {
-  res.json({ success: true, data: { message: 'accept friend request placeholder' } });
-});
+router.get('/requests', friendController.getPendingRequests);
 
-router.patch('/:id/decline', (req, res) => {
-  res.json({ success: true, data: { message: 'decline friend request placeholder' } });
-});
+router.get('/activity', friendController.getFriendActivity);
 
-router.delete('/:id', (req, res) => {
-  res.json({ success: true, data: { message: 'remove friend placeholder' } });
-});
+router.patch(
+  '/:id/accept',
+  param('id').isMongoId().withMessage('Invalid friendship ID'),
+  validate,
+  friendController.acceptFriendRequest
+);
+
+router.patch(
+  '/:id/decline',
+  param('id').isMongoId().withMessage('Invalid friendship ID'),
+  validate,
+  friendController.declineFriendRequest
+);
+
+router.delete(
+  '/:id',
+  param('id').isMongoId().withMessage('Invalid friendship ID'),
+  validate,
+  friendController.removeFriend
+);
 
 module.exports = router;

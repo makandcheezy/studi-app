@@ -58,3 +58,28 @@ export const endSession = (id) =>
 // ---- LEADERBOARD ----
 export const getLeaderboard = (period = "weekly", page = 1, limit = 20) =>
   request(`/leaderboard?period=${period}&page=${page}&limit=${limit}`);
+
+// ---- FRIENDS ----
+export const searchUsers = (query) =>
+  request(`/friends/search?q=${encodeURIComponent(query)}`);
+
+export const getFriends = () =>
+  request("/friends");
+
+export const getFriendRequests = () =>
+  request("/friends/requests");
+
+export const getFriendActivity = () =>
+  request("/friends/activity");
+
+export const sendFriendRequest = (recipientId) =>
+  request("/friends/request", "POST", { recipientId });
+
+export const acceptFriendRequest = (friendshipId) =>
+  request(`/friends/${friendshipId}/accept`, "PATCH");
+
+export const declineFriendRequest = (friendshipId) =>
+  request(`/friends/${friendshipId}/decline`, "PATCH");
+
+export const removeFriend = (friendshipId) =>
+  request(`/friends/${friendshipId}`, "DELETE");

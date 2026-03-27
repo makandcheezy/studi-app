@@ -31,3 +31,106 @@
   color: #7b8794;
   line-height: 1.5;
 }
+
+.friends-search-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.friends-search-input {
+  flex: 1 1 280px;
+  padding: 12px 14px;
+  border: 1px solid #dbe8e6;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #2f3441;
+  background: white;
+  font-family: inherit;
+}
+
+.friends-search-input:focus {
+  outline: none;
+  border-color: #3d8a96;
+}
+
+.friends-primary-btn,
+.friends-secondary-btn {
+  width: fit-content;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.friends-primary-btn {
+  border: none;
+  background: #3d8a96;
+  color: white;
+}
+
+.friends-primary-btn:hover {
+  background: #347680;
+}
+
+.friends-secondary-btn {
+  border: 1px solid #c6d9d6;
+  background: white;
+  color: #2f3441;
+}
+
+.friends-secondary-btn:hover {
+  background: #f6fbfa;
+}
+
+.friends-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.friends-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #f8fbfb;
+  border: 1px solid #e0eeec;
+}
+
+.friends-row h3 {
+  margin: 0 0 4px;
+  color: #2f3441;
+}
+
+.friends-row p {
+  margin: 4px 0;
+  color: #7b8794;
+}
+
+.friends-action-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.friends-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #e8f4f3;
+  color: #2e7d71;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.friends-message {
+  margin: 0 0 16px;
+  color: #2e7d71;
+  font-weight: 600;
+}
