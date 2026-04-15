@@ -36,6 +36,10 @@ export const register = ({ email, password, displayName }) =>
 
 export const logout = () => request("/auth/logout", "POST", {});
 
+// ---- DASHBOARD ----
+export const getDashboard = () =>
+  request("/users/me/dashboard");
+
 // ---- SESSIONS ----
 export const createSession = (sessionData) =>
   request("/sessions", "POST", sessionData);
