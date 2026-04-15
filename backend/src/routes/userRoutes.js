@@ -1,6 +1,12 @@
 // user endpoints — profile viewing/editing and user search (US-3)
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/auth');
+const userController = require('../controllers/userController');
+
+router.use(protect);
+
+router.get('/me/dashboard', userController.getDashboard);
 
 router.get('/me', (req, res) => {
   res.json({ success: true, data: { message: 'get profile placeholder' } });

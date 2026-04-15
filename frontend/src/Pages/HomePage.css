@@ -63,6 +63,11 @@
   color: #2e7d71;
 }
 
+.home-subtitle {
+  margin-top: 6px;
+  color: #7b8794;
+}
+
 .home-user-stats {
   margin-top: 12px;
 }
@@ -113,5 +118,28 @@
   background: #f8fbfb;
   border: 1px dashed #d5e7e4;
   text-align: center;
+  color: #7b8794;
+}
+
+.home-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-session-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: #f8fbfb;
+  border: 1px solid #e0eeec;
+}
+
+.home-session-card h3 {
+  margin: 0 0 6px;
+  color: #2f3441;
+}
+
+.home-session-card p {
+  margin: 4px 0;
   color: #7b8794;
 }
