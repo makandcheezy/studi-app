@@ -169,7 +169,7 @@ async function searchUsers(userId, query) {
   }));
 }
 
-async function getFriendActivity(userId) {
+async function getFriendActivity(userId, { page = 1, limit = 20 } = {}) {
   const friendships = await Friendship.find({
     status: 'accepted',
     $or: [{ requester: userId }, { recipient: userId }],
@@ -182,26 +182,43 @@ async function getFriendActivity(userId) {
   );
 
   if (friendIds.length === 0) {
-    return [];
+    return {
+      activity: [],
+      pagination: { page, limit, total: 0, hasMore: false },
+    };
   }
 
-  const sessions = await Session.find({
-    userId: { $in: friendIds },
-    status: 'completed',
-  })
-    .sort({ endTime: -1 })
-    .limit(10)
-    .populate('userId', 'displayName');
+  const filter = { userId: { $in: friendIds }, status: 'completed' };
+  const skip = (page - 1) * limit;
 
-  return sessions.map((session) => ({
+  const [sessions, total] = await Promise.all([
+    Session.find(filter)
+      .sort({ startTime: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('userId', 'displayName'),
+    Session.countDocuments(filter),
+  ]);
+
+  const activity = sessions.map((session) => ({
     id: session._id.toString(),
     userId: session.userId?._id?.toString() || '',
     displayName: session.userId?.displayName || 'Unknown User',
     subject: session.subject,
     durationMinutes: session.durationMinutes,
     pointsEarned: session.pointsEarned,
-    completedAt: session.endTime,
+    startTime: session.startTime,
   }));
+
+  return {
+    activity,
+    pagination: {
+      page,
+      limit,
+      total,
+      hasMore: skip + sessions.length < total,
+    },
+  };
 }
 
 async function acceptFriendRequest(friendshipId, userId) {

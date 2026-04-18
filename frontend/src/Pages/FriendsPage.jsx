@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import {
   acceptFriendRequest,
   declineFriendRequest,
-  getFriendActivity,
   getFriendRequests,
   getFriends,
   removeFriend,
   searchUsers,
   sendFriendRequest,
 } from "../services/api";
+import FriendActivityFeed from "../components/FriendActivityFeed";
 import "./FriendsPage.css";
 
 export default function FriendsPage() {
@@ -17,31 +17,27 @@ export default function FriendsPage() {
   const [friends, setFriends] = useState([]);
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [outgoingRequests, setOutgoingRequests] = useState([]);
-  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [message, setMessage] = useState("");
 
   const fetchFriendsData = async () => {
-    const [friendsRes, requestsRes, activityRes] = await Promise.all([
+    const [friendsRes, requestsRes] = await Promise.all([
       getFriends(),
       getFriendRequests(),
-      getFriendActivity(),
     ]);
 
-    if (!friendsRes?.success || !requestsRes?.success || !activityRes?.success) {
+    if (!friendsRes?.success || !requestsRes?.success) {
       setMessage("Unable to load friends right now.");
       setFriends([]);
       setIncomingRequests([]);
       setOutgoingRequests([]);
-      setActivity([]);
       return false;
     }
 
     setFriends(friendsRes.data.friends || []);
     setIncomingRequests(requestsRes.data.incoming || []);
     setOutgoingRequests(requestsRes.data.outgoing || []);
-    setActivity(activityRes.data.activity || []);
     return true;
   };
 
@@ -49,20 +45,18 @@ export default function FriendsPage() {
     let ignore = false;
 
     const loadInitialData = async () => {
-      const [friendsRes, requestsRes, activityRes] = await Promise.all([
+      const [friendsRes, requestsRes] = await Promise.all([
         getFriends(),
         getFriendRequests(),
-        getFriendActivity(),
       ]);
 
       if (ignore) return;
 
-      if (!friendsRes?.success || !requestsRes?.success || !activityRes?.success) {
+      if (!friendsRes?.success || !requestsRes?.success) {
         setMessage("Unable to load friends right now.");
         setFriends([]);
         setIncomingRequests([]);
         setOutgoingRequests([]);
-        setActivity([]);
         setLoading(false);
         return;
       }
@@ -70,7 +64,6 @@ export default function FriendsPage() {
       setFriends(friendsRes.data.friends || []);
       setIncomingRequests(requestsRes.data.incoming || []);
       setOutgoingRequests(requestsRes.data.outgoing || []);
-      setActivity(activityRes.data.activity || []);
       setLoading(false);
     };
 
@@ -337,24 +330,7 @@ export default function FriendsPage() {
 
       <section className="friends-card">
         <h2 className="friends-section-title">Recent Friend Activity</h2>
-
-        {loading ? (
-          <p className="friends-muted">Loading...</p>
-        ) : activity.length === 0 ? (
-          <p className="friends-muted">No friend activity yet.</p>
-        ) : (
-          <div className="friends-stack">
-            {activity.map((item) => (
-              <div key={item.id} className="friends-row">
-                <div>
-                  <h3>{item.displayName}</h3>
-                  <p>{item.subject}</p>
-                  <p>{item.durationMinutes} min • {item.pointsEarned} XP</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <FriendActivityFeed />
       </section>
     </div>
   );

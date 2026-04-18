@@ -22,7 +22,10 @@ const loginValidation = [
 
 router.post('/register', authLimiter, registerValidation, registerUser);
 router.post('/login',    authLimiter, loginValidation,    loginUser);
-router.post('/refresh',  protect,                         refreshToken);
+// /refresh does NOT use protect — it authenticates via the refresh token itself,
+// which is verified and compared against the stored hash inside the controller.
+// gating it behind an access token would make it unreachable once the access token expires.
+router.post('/refresh',                                   refreshToken);
 router.post('/logout',   protect,                         logoutUser);
 
 module.exports = router;

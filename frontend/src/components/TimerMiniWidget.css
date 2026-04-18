@@ -1,0 +1,111 @@
+.timer-mini {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  background: white;
+  border: 1px solid #e8efee;
+  border-radius: 20px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 18px rgba(47, 52, 65, 0.08);
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.timer-mini:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(47, 52, 65, 0.12);
+}
+
+.timer-mini-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timer-mini-phase {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2e7d71;
+}
+
+.timer-mini-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f0f7f6;
+  color: #3d8a96;
+}
+
+.timer-mini-badge.paused {
+  background: #fff3e5;
+  color: #b36a1f;
+}
+
+.timer-mini-time {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2f3441;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.timer-mini-subject {
+  font-size: 0.8rem;
+  color: #7b8794;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-mini-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.timer-mini-btn {
+  flex: 1;
+  border: none;
+  background: #3d8a96;
+  color: white;
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.timer-mini-btn:hover {
+  background: #347680;
+}
+
+.timer-mini-btn:active {
+  transform: scale(0.97);
+}
+
+.timer-mini-btn.secondary {
+  background: white;
+  color: #2f3441;
+  border: 1px solid #c6d9d6;
+}
+
+.timer-mini-btn.secondary:hover {
+  background: #f6fbfa;
+}
+
+@media (max-width: 560px) {
+  .timer-mini {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    min-width: 0;
+  }
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createSession, getSessions } from "../services/api";
 import StudyMethodTimer from "../components/StudyMethodTimer.jsx";
+import { useTimer } from "../context/TimerContext";
 import "./SessionsPage.css";
 
 const HOUR_OPTIONS = Array.from({ length: 13 }, (_, index) => index);
@@ -10,6 +11,7 @@ const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, index) => index * 5);
 export default function SessionsPage() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { lastLoggedSession, clearLastLogged } = useTimer();
 
   useEffect(() => {
     getSessions().then((res) => {
@@ -19,6 +21,13 @@ export default function SessionsPage() {
       setLoading(false);
     });
   }, []);
+
+  // pick up sessions logged via the timer (full UI or mini widget)
+  useEffect(() => {
+    if (!lastLoggedSession) return;
+    setSessions((prev) => [lastLoggedSession, ...prev]);
+    clearLastLogged();
+  }, [lastLoggedSession, clearLastLogged]);
 
   const handleManualAdd = async (e) => {
     e.preventDefault();
@@ -36,10 +45,6 @@ export default function SessionsPage() {
       setSessions((prev) => [res.data.session, ...prev]);
       e.target.reset();
     }
-  };
-
-  const handleTimedAdd = (newSession) => {
-    setSessions((prev) => [newSession, ...prev]);
   };
 
   return (
@@ -108,7 +113,7 @@ export default function SessionsPage() {
           <p className="sessions-muted">
             Pick a study method and let Studi track the focus session for you.
           </p>
-          <StudyMethodTimer onLogSession={handleTimedAdd} />
+          <StudyMethodTimer />
         </section>
       </div>
 

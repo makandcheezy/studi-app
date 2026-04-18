@@ -26,7 +26,13 @@ router.get('/', friendController.getFriends);
 
 router.get('/requests', friendController.getPendingRequests);
 
-router.get('/activity', friendController.getFriendActivity);
+router.get(
+  '/activity',
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer').toInt(),
+  query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('limit must be between 1 and 50').toInt(),
+  validate,
+  friendController.getFriendActivity
+);
 
 router.patch(
   '/:id/accept',

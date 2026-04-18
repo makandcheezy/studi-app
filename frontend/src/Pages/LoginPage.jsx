@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login, register, setToken } from "../services/api";
+import { login, register, setToken, setRefreshToken } from "../services/api";
 import "./LoginPage.css";
 
 export default function Login() {
@@ -22,6 +22,7 @@ export default function Login() {
     setIsLoading(false);
     if (result?.success) {
       setToken(result.data.accessToken);
+      if (result.data.refreshToken) setRefreshToken(result.data.refreshToken);
       navigate("/home");
     } else {
       setMessage(result?.error?.message || "Login failed. Please try again.");
@@ -43,6 +44,7 @@ export default function Login() {
     setIsLoading(false);
     if (result?.success) {
       setToken(result.data.accessToken);
+      if (result.data.refreshToken) setRefreshToken(result.data.refreshToken);
       navigate("/home");
     } else {
       setMessage(result?.error?.message || "Registration failed. Please try again.");

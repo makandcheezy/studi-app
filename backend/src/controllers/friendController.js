@@ -38,8 +38,10 @@ const searchUsers = async (req, res, next) => {
 
 const getFriendActivity = async (req, res, next) => {
   try {
-    const activity = await friendService.getFriendActivity(req.user.id);
-    res.json({ success: true, data: { activity } });
+    const page = req.query.page ? Number(req.query.page) : 1;
+    const limit = req.query.limit ? Number(req.query.limit) : 20;
+    const result = await friendService.getFriendActivity(req.user.id, { page, limit });
+    res.json({ success: true, data: result });
   } catch (err) {
     next(err);
   }
