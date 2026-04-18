@@ -8,6 +8,8 @@ import Leaderboard from "./Pages/LeaderboardPage";
 import Friends from "./Pages/FriendsPage";
 
 import BottomNav from "./components/BottomNav";
+import TimerMiniWidget from "./components/TimerMiniWidget";
+import { TimerProvider } from "./context/TimerContext";
 import "./App.css";
 
 function ProtectedRoute({ children }) {
@@ -18,9 +20,12 @@ function ProtectedRoute({ children }) {
 function AppContent() {
   const location = useLocation();
   const hideNav = location.pathname === "/";
+  // hide mini on login (no timer yet) and /sessions (full timer already there)
+  const showMiniTimer = location.pathname !== "/" && location.pathname !== "/sessions";
 
   return (
     <div className="app-shell">
+      {showMiniTimer && <TimerMiniWidget />}
       <main className="page-content">
         <Routes>
           <Route path="/" element={<Login />} />
@@ -39,7 +44,9 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <AppContent />
+      <TimerProvider>
+        <AppContent />
+      </TimerProvider>
     </Router>
   );
 }

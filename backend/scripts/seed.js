@@ -1,142 +1,149 @@
-// seed script — populates the database with dummy users for development/testing
+// seed script — populates sessions + friendships for dev testing
+// does NOT modify User records (preserves display names)
 // usage: npm run seed (from backend/ directory)
 require('dotenv').config();
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const connectDB = require('../src/config/db');
 const User = require('../src/models/User');
+const Session = require('../src/models/Session');
+const Friendship = require('../src/models/Friendship');
+const { calculatePoints } = require('../src/services/pointsService');
 
-const BCRYPT_ROUNDS = 12;
-const STUDENT_PASSWORD = 'Password1!';
-const ADMIN_PASSWORD = 'Admin1234!';
+const ME_EMAIL = 'adammakled2004@gmail.com';
+
+const SUBJECTS = [
+  'Software Engineering',
+  'Data Structures',
+  'Linear Algebra',
+  'Organic Chemistry',
+  'World History',
+  'Macroeconomics',
+  'Operating Systems',
+  'Statistics',
+  'Psychology',
+  'Physics II',
+];
+
+const MINUTES_AGO = (n) => new Date(Date.now() - n * 60 * 1000);
+const HOURS_AGO = (n) => new Date(Date.now() - n * 60 * 60 * 1000);
+const DAYS_AGO = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+
+function pick(arr, i) {
+  return arr[i % arr.length];
+}
+
+function makeSession(userId, startTime, durationMinutes, subject, streak = 0) {
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
+  return {
+    userId,
+    subject,
+    durationMinutes,
+    startTime,
+    endTime,
+    status: 'completed',
+    pointsEarned: calculatePoints(durationMinutes, streak),
+  };
+}
+
+// buckets for leaderboard coverage — each fake user gets one session per bucket
+// picked so all three time windows (daily / weekly / monthly) get data
+function leaderboardSessionsFor(userId, seedIndex) {
+  const hoursToday = 2 + (seedIndex % 6);
+  const daysThisWeek = 2 + (seedIndex % 3);
+  const daysThisMonth = 10 + (seedIndex % 8);
+  const daysAllTime = 45 + (seedIndex % 20);
+
+  return [
+    makeSession(userId, HOURS_AGO(hoursToday), 30 + (seedIndex * 7) % 60, pick(SUBJECTS, seedIndex)),
+    makeSession(userId, DAYS_AGO(daysThisWeek), 45 + (seedIndex * 5) % 45, pick(SUBJECTS, seedIndex + 1)),
+    makeSession(userId, DAYS_AGO(daysThisMonth), 25 + (seedIndex * 3) % 50, pick(SUBJECTS, seedIndex + 2)),
+    makeSession(userId, DAYS_AGO(daysAllTime), 60, pick(SUBJECTS, seedIndex + 3)),
+  ];
+}
+
+// activity feed coverage — varied relative timestamps to exercise the "just now / X hours / yesterday" formatter
+function activitySessionsFor(userId, seedIndex) {
+  const offsets = [
+    MINUTES_AGO(3),
+    MINUTES_AGO(22 + seedIndex * 4),
+    HOURS_AGO(2 + seedIndex),
+    HOURS_AGO(8 + seedIndex * 2),
+    DAYS_AGO(1),
+    DAYS_AGO(3 + (seedIndex % 3)),
+  ];
+
+  return offsets.map((start, i) =>
+    makeSession(userId, start, 20 + ((seedIndex + i) * 11) % 70, pick(SUBJECTS, seedIndex + i))
+  );
+}
 
 async function seed() {
   await connectDB();
 
-  await User.deleteMany({});
-  console.log('Cleared existing users.');
+  const me = await User.findOne({ email: ME_EMAIL });
+  if (!me) {
+    throw new Error(`current user "${ME_EMAIL}" not found — register the account first, then re-run seed`);
+  }
+  console.log(`Found current user: ${me.displayName} (${me.email})`);
 
-  const studentHash = await bcrypt.hash(STUDENT_PASSWORD, BCRYPT_ROUNDS);
-  const adminHash = await bcrypt.hash(ADMIN_PASSWORD, BCRYPT_ROUNDS);
+  const fakeUsers = await User.find({
+    _id: { $ne: me._id },
+    role: { $ne: 'admin' },
+  });
 
-  const now = new Date();
-  const daysAgo = (n) => new Date(now - n * 24 * 60 * 60 * 1000);
+  if (fakeUsers.length === 0) {
+    throw new Error('no fake student users found — the seeded users (Alice, Bob, ...) need to exist in the DB first');
+  }
+  console.log(`Found ${fakeUsers.length} fake users: ${fakeUsers.map((u) => u.displayName).join(', ')}`);
 
-  const users = [
-    // 1 admin
-    {
-      email: 'admin@studi.dev',
-      passwordHash: adminHash,
-      displayName: 'Admin',
-      role: 'admin',
-      totalPoints: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      lastStudyDate: null,
-    },
-    // 9 students with varied points and streaks
-    {
-      email: 'alice@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Alice',
-      role: 'student',
-      totalPoints: 2100,
-      currentStreak: 10,
-      longestStreak: 14,
-      lastStudyDate: now,
-    },
-    {
-      email: 'bob@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Bob',
-      role: 'student',
-      totalPoints: 1750,
-      currentStreak: 7,
-      longestStreak: 10,
-      lastStudyDate: now,
-    },
-    {
-      email: 'carol@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Carol',
-      role: 'student',
-      totalPoints: 1400,
-      currentStreak: 5,
-      longestStreak: 8,
-      lastStudyDate: daysAgo(1),
-    },
-    {
-      email: 'david@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'David',
-      role: 'student',
-      totalPoints: 1050,
-      currentStreak: 3,
-      longestStreak: 9,
-      lastStudyDate: daysAgo(1),
-    },
-    {
-      email: 'emma@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Emma',
-      role: 'student',
-      totalPoints: 780,
-      currentStreak: 2,
-      longestStreak: 6,
-      lastStudyDate: daysAgo(2),
-    },
-    {
-      email: 'frank@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Frank',
-      role: 'student',
-      totalPoints: 430,
-      currentStreak: 1,
-      longestStreak: 4,
-      lastStudyDate: daysAgo(3),
-    },
-    {
-      email: 'grace@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Grace',
-      role: 'student',
-      totalPoints: 200,
-      currentStreak: 0,
-      longestStreak: 3,
-      lastStudyDate: daysAgo(7),
-    },
-    {
-      email: 'henry@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Henry',
-      role: 'student',
-      totalPoints: 80,
-      currentStreak: 0,
-      longestStreak: 1,
-      lastStudyDate: daysAgo(14),
-    },
-    {
-      email: 'iris@studi.dev',
-      passwordHash: studentHash,
-      displayName: 'Iris',
-      role: 'student',
-      totalPoints: 0,
-      currentStreak: 0,
-      longestStreak: 0,
-      lastStudyDate: null,
-    },
-  ];
+  const fakeIds = fakeUsers.map((u) => u._id);
 
-  await User.insertMany(users);
-  console.log(`Seeded ${users.length} users (1 admin, ${users.length - 1} students).`);
-  console.log(`\nTest credentials:`);
-  console.log(`  Admin  — email: admin@studi.dev  | password: ${ADMIN_PASSWORD}`);
-  console.log(`  Student — email: alice@studi.dev | password: ${STUDENT_PASSWORD}`);
+  // clear only fake users' sessions; leave Adam's own sessions alone
+  const deletedSessions = await Session.deleteMany({ userId: { $in: fakeIds } });
+  console.log(`Cleared ${deletedSessions.deletedCount} existing fake-user sessions.`);
+
+  // clear only test friendships (both parties are me or fake) — leaves any unrelated friendships intact
+  const involvedIds = [me._id, ...fakeIds];
+  const deletedFriendships = await Friendship.deleteMany({
+    requester: { $in: involvedIds },
+    recipient: { $in: involvedIds },
+  });
+  console.log(`Cleared ${deletedFriendships.deletedCount} existing test friendships.`);
+
+  // pick the first 5 fake users as Adam's friends
+  const friendCount = Math.min(5, fakeUsers.length);
+  const friendsOfMe = fakeUsers.slice(0, friendCount);
+  const nonFriends = fakeUsers.slice(friendCount);
+
+  // sessions: leaderboard coverage for everyone + activity coverage for friends
+  const sessions = [];
+  fakeUsers.forEach((user, i) => {
+    sessions.push(...leaderboardSessionsFor(user._id, i));
+  });
+  friendsOfMe.forEach((user, i) => {
+    sessions.push(...activitySessionsFor(user._id, i));
+  });
+
+  await Session.insertMany(sessions);
+  console.log(`Inserted ${sessions.length} sessions.`);
+
+  // friendships: Adam <-> each friend, accepted
+  const friendships = friendsOfMe.map((user) => ({
+    requester: me._id,
+    recipient: user._id,
+    status: 'accepted',
+  }));
+
+  await Friendship.insertMany(friendships);
+  console.log(`Created ${friendships.length} accepted friendships with: ${friendsOfMe.map((u) => u.displayName).join(', ')}`);
+  if (nonFriends.length > 0) {
+    console.log(`Non-friends (still on leaderboard, not in activity feed): ${nonFriends.map((u) => u.displayName).join(', ')}`);
+  }
 
   await mongoose.disconnect();
 }
 
 seed().catch((err) => {
-  console.error('Seed failed:', err);
+  console.error('Seed failed:', err.message);
   process.exit(1);
 });

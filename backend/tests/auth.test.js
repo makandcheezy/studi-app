@@ -198,45 +198,29 @@ describe('POST /api/auth/login', () => {
 // POST /api/auth/refresh
 // ---------------------------------------------------------------------------
 describe('POST /api/auth/refresh', () => {
-  it('200 — valid access token + refresh token returns new access token', async () => {
-    const { accessToken, refreshToken } = await registerAndLogin();
+  it('200 — valid refresh token returns new access token (no access token required)', async () => {
+    const { refreshToken } = await registerAndLogin();
 
-    const res = await request(app)
-      .post('/api/auth/refresh')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ refreshToken });
+    const res = await request(app).post('/api/auth/refresh').send({ refreshToken });
 
     expect(res.status).toBe(200);
     expect(res.body.data.accessToken).toBeDefined();
   });
 
-  it('401 — no Authorization header rejected by protect middleware', async () => {
-    const { refreshToken } = await registerAndLogin();
-
-    const res = await request(app).post('/api/auth/refresh').send({ refreshToken });
-
-    expect(res.status).toBe(401);
-    expect(res.body.error.code).toBe('UNAUTHORIZED');
-  });
-
   it('400 — missing refreshToken in body', async () => {
-    const { accessToken } = await registerAndLogin();
+    await registerAndLogin();
 
-    const res = await request(app)
-      .post('/api/auth/refresh')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({});
+    const res = await request(app).post('/api/auth/refresh').send({});
 
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('401 — tampered refresh token', async () => {
-    const { accessToken } = await registerAndLogin();
+    await registerAndLogin();
 
     const res = await request(app)
       .post('/api/auth/refresh')
-      .set('Authorization', `Bearer ${accessToken}`)
       .send({ refreshToken: 'totally.invalid.token' });
 
     expect(res.status).toBe(401);
@@ -252,10 +236,7 @@ describe('POST /api/auth/refresh', () => {
       .set('Authorization', `Bearer ${accessToken}`);
 
     // now try to refresh
-    const res = await request(app)
-      .post('/api/auth/refresh')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ refreshToken });
+    const res = await request(app).post('/api/auth/refresh').send({ refreshToken });
 
     expect(res.status).toBe(401);
     expect(res.body.error.code).toBe('INVALID_TOKEN');
