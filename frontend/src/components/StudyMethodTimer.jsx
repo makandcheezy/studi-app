@@ -1,4 +1,3 @@
-// full timer UI on the Sessions page — reads all state from TimerContext
 import { useState } from "react";
 import {
   STUDY_METHODS,
@@ -12,7 +11,6 @@ function formatMethodDuration(minutesValue) {
   }
   return `${minutesValue} min`;
 }
-
 export default function StudyMethodTimer() {
   const {
     subject,
@@ -31,9 +29,8 @@ export default function StudyMethodTimer() {
     reset,
     finishAndLog,
   } = useTimer();
-
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-
+  const [timedLocation, setTimedLocation] = useState("");
   const handleResetClick = () => {
     if (!hasActiveTimer && phase === "focus") {
       reset();
@@ -41,12 +38,10 @@ export default function StudyMethodTimer() {
     }
     setShowResetConfirm(true);
   };
-
   const confirmReset = async () => {
     await reset();
     setShowResetConfirm(false);
   };
-
   return (
     <div className="sessions-create">
       <div className="sessions-create-info">
@@ -54,7 +49,7 @@ export default function StudyMethodTimer() {
         <input
           id="timedSessionName"
           type="text"
-          placeholder="e.g. Cramming for Humanities Exam"
+          placeholder="e.g. SWE Sprint 2"
           value={sessionName}
           onChange={(e) => setSessionName(e.target.value)}
         />
@@ -65,10 +60,49 @@ export default function StudyMethodTimer() {
         <input
           id="timedSubject"
           type="text"
-          placeholder="e.g. Basket Weaving 101"
+          placeholder="e.g. Intro to SWE"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
         />
+      </div>
+
+      <div className="sessions-create-info">
+        <label htmlFor="timedLocation">Location</label>
+        <div className="sessions-location-row">
+          <input
+            id="timedLocation"
+            name="timedLocation"
+            type="text"
+            placeholder="e.g. Marston Library"
+            value={timedLocation}
+            onChange={(e) => setTimedLocation(e.target.value)}
+          />
+          <button
+            type="button"
+            className="sessions-secondary-btn sessions-location-btn"
+            onClick={() => {
+              if (!navigator.geolocation) {
+                alert("Geolocation not available");
+                return;
+              }
+              navigator.geolocation.getCurrentPosition(
+                () => {
+                  setTimedLocation("Marston Library");
+                },
+                (error) => {
+                  alert("Unable to get location: " + error.message);
+                },
+                {
+                  enableHighAccuracy: true,
+                  timeout: 10000,
+                  maximumAge: 0,
+                }
+              );
+            }}
+          >
+            Use Current Location
+          </button>
+        </div>
       </div>
 
       <div className="sessions-create-info">
@@ -125,12 +159,11 @@ export default function StudyMethodTimer() {
           type="button"
           className="sessions-primary-btn"
           disabled={!backendSessionId}
-          onClick={finishAndLog}
+          onClick={() => finishAndLog(timedLocation.trim())}
         >
           Finish & Log
         </button>
       </div>
-
       {showResetConfirm ? (
         <div className="sessions-reset-confirm" role="alert">
           <p>Reset this timer?</p>

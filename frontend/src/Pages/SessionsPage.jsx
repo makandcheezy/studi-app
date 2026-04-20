@@ -7,46 +7,77 @@ import "./SessionsPage.css";
 const HOUR_OPTIONS = Array.from({ length: 13 }, (_, index) => index);
 const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, index) => index * 5);
 
+const SESSION_LOCATIONS_KEY = "sessionLocations";
 
+function getSavedSessionLocations() {
+  try {
+    return JSON.parse(localStorage.getItem(SESSION_LOCATIONS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+function saveSessionLocation(sessionId, location) {
+  const existing = getSavedSessionLocations();
+  existing[sessionId] = location;
+  localStorage.setItem(SESSION_LOCATIONS_KEY, JSON.stringify(existing));
+}
 export default function SessionsPage() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState("");
   const { lastLoggedSession, clearLastLogged } = useTimer();
-
   useEffect(() => {
     getSessions().then((res) => {
       if (res && res.success) {
-        setSessions(res.data.sessions);
+        const savedLocations = getSavedSessionLocations();
+        const sessionsWithLocations = res.data.sessions.map((session) => ({
+          ...session,
+          location: session.location || savedLocations[session._id] || "",
+        }));
+        setSessions(sessionsWithLocations);
       }
       setLoading(false);
     });
   }, []);
-
-  // pick up sessions logged via the timer (full UI or mini widget)
   useEffect(() => {
     if (!lastLoggedSession) return;
-    setSessions((prev) => [lastLoggedSession, ...prev]);
+    const savedLocations = getSavedSessionLocations();
+    const sessionWithLocation = {
+      ...lastLoggedSession,
+      location:
+        lastLoggedSession.location ||
+        savedLocations[lastLoggedSession._id] ||
+        "",
+    };
+    setSessions((prev) => [sessionWithLocation, ...prev]);
     clearLastLogged();
   }, [lastLoggedSession, clearLastLogged]);
-
   const handleManualAdd = async (e) => {
     e.preventDefault();
-
     const formData = new FormData(e.target);
     const subject = formData.get("subject")?.toString().trim();
     const hours = Number(formData.get("durationHours") ?? 0);
     const minutes = Number(formData.get("durationMinutes") ?? 0);
     const totalMinutes = hours * 60 + minutes;
-
     if (!subject || totalMinutes <= 0) return;
-
-    const res = await createSession({ subject, durationMinutes: totalMinutes });
+    const trimmedLocation = location.trim();
+    const res = await createSession({
+      subject,
+      durationMinutes: totalMinutes,
+    });
     if (res && res.success) {
-      setSessions((prev) => [res.data.session, ...prev]);
+      const newSession = {
+        ...res.data.session,
+        location: trimmedLocation,
+      };
+      if (newSession._id && trimmedLocation) {
+        saveSessionLocation(newSession._id, trimmedLocation);
+      }
+      setSessions((prev) => [newSession, ...prev]);
       e.target.reset();
+      setLocation("");
     }
   };
-
   return (
     <div className="page sessions-page">
       <section className="sessions-card">
@@ -72,6 +103,46 @@ export default function SessionsPage() {
             </div>
 
             <div className="sessions-create-info">
+              <label htmlFor="location">Location</label>
+              <div className="sessions-location-row">
+                <input
+                  id="location"
+                  name="location"
+                  type="text"
+                  placeholder="e.g. Marston Library"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="sessions-secondary-btn sessions-location-btn"
+                  onClick={() => {
+                    if (!navigator.geolocation) {
+                      alert("Geolocation is not supported.");
+                      return;
+                    }
+
+                    navigator.geolocation.getCurrentPosition(
+                      () => {
+                        setLocation("Marston Library");
+                      },
+                      (error) => {
+                        alert("Unable to get location: " + error.message);
+                      },
+                      {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0,
+                      }
+                    );
+                  }}
+                >
+                  Use Current Location
+                </button>
+              </div>
+            </div>
+
+            <div className="sessions-create-info">
               <label>Duration</label>
               <div className="sessions-duration-grid">
                 <select
@@ -86,7 +157,6 @@ export default function SessionsPage() {
                     </option>
                   ))}
                 </select>
-
                 <select
                   id="durationMinutes"
                   name="durationMinutes"
@@ -125,7 +195,9 @@ export default function SessionsPage() {
         ) : sessions.length === 0 ? (
           <div className="sessions-empty-box">
             <p className="sessions-muted">No study sessions yet.</p>
-            <p className="sessions-muted">Your added study sessions will appear here.</p>
+            <p className="sessions-muted">
+              Your added study sessions will appear here.
+            </p>
           </div>
         ) : (
           <div className="sessions-list">
@@ -133,6 +205,7 @@ export default function SessionsPage() {
               <div key={session._id} className="sessions-list-item">
                 <h3>{session.subject}</h3>
                 <p>{session.durationMinutes} min</p>
+                {session.location && <p>Location: {session.location}</p>}
                 {session.pointsEarned > 0 && (
                   <p style={{ color: "#2e7d71", fontWeight: 600 }}>
                     +{session.pointsEarned} XP
