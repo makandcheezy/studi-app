@@ -30,8 +30,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/admin', require('./routes/adminRoutes'));
 
-// Error handler 
+// Error handler
 app.use(errorHandler);
 
 module.exports = app;

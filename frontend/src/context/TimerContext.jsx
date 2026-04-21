@@ -1,8 +1,6 @@
 // timer context — persists timer state across navigation and page refreshes
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -15,22 +13,10 @@ import {
   resumeSession as apiResume,
   endSession as apiEnd,
 } from "../services/api";
+import { TimerContext, getMethodById } from "./timerUtils";
 
 const STORAGE_KEY = "studi_timer_v1";
-
-export const STUDY_METHODS = [
-  { id: "dev-phase", label: "Dev Phase", focusMinutes: 0.5, breakMinutes: 10 / 60 },
-  { id: "pomodoro", label: "Pomodoro", focusMinutes: 25, breakMinutes: 5 },
-  { id: "extended-pomodoro", label: "Extended Pomodoro", focusMinutes: 50, breakMinutes: 10 },
-  { id: "52-17", label: "52-17 Rule", focusMinutes: 52, breakMinutes: 17 },
-  { id: "classic-hour", label: "Classic Hour", focusMinutes: 60, breakMinutes: 10 },
-];
-
 const DEFAULT_METHOD_ID = "pomodoro";
-
-export function getMethodById(id) {
-  return STUDY_METHODS.find((m) => m.id === id) ?? STUDY_METHODS[0];
-}
 
 function phaseSeconds(phase, method) {
   return Math.round((phase === "focus" ? method.focusMinutes : method.breakMinutes) * 60);
@@ -67,16 +53,19 @@ const initialState = {
   isRunning: false,
   phaseEndAt: null,
   phaseRemainingSec: null,
+  displayRemainingSec: null,
   lastLoggedSession: null,
 };
-
-const TimerContext = createContext(null);
 
 export function TimerProvider({ children }) {
   const [state, setState] = useState(initialState);
   const [hydrated, setHydrated] = useState(false);
   const stateRef = useRef(state);
-  stateRef.current = state;
+
+  // keep stateRef in sync after each render so async callbacks always read latest state
+  useEffect(() => {
+    stateRef.current = state;
+  });
 
   // hydrate from localStorage + backend on mount
   useEffect(() => {
@@ -101,7 +90,18 @@ export function TimerProvider({ children }) {
         }
       }
 
-      setState((prev) => ({ ...prev, ...snap, lastLoggedSession: null }));
+      // compute displayRemainingSec here (in effect, not render) so Date.now() is safe
+      const displayRemainingSec =
+        snap.phaseEndAt != null
+          ? Math.max(0, Math.ceil((snap.phaseEndAt - Date.now()) / 1000))
+          : null;
+
+      setState((prev) => ({
+        ...prev,
+        ...snap,
+        lastLoggedSession: null,
+        displayRemainingSec,
+      }));
       setHydrated(true);
     };
 
@@ -130,7 +130,7 @@ export function TimerProvider({ children }) {
     });
   }, [hydrated, state]);
 
-  // ticking interval — recomputes time from phaseEndAt each second
+  // ticking interval — updates displayRemainingSec each second so Date.now() stays out of render
   useEffect(() => {
     if (!state.isRunning || state.phaseEndAt == null) return;
 
@@ -142,31 +142,31 @@ export function TimerProvider({ children }) {
       if (now >= current.phaseEndAt) {
         const nextPhase = current.phase === "focus" ? "break" : "focus";
         const method = getMethodById(current.methodId);
-        const nextDurationMs = phaseSeconds(nextPhase, method) * 1000;
+        const nextDurationSec = phaseSeconds(nextPhase, method);
         setState((prev) => ({
           ...prev,
           phase: nextPhase,
-          phaseEndAt: Date.now() + nextDurationMs,
+          phaseEndAt: Date.now() + nextDurationSec * 1000,
+          displayRemainingSec: nextDurationSec,
         }));
       } else {
-        // force rerender so consumers see updated derived timeRemaining
-        setState((prev) => ({ ...prev }));
+        const remaining = Math.max(0, Math.ceil((current.phaseEndAt - now) / 1000));
+        setState((prev) => ({ ...prev, displayRemainingSec: remaining }));
       }
     }, 1000);
 
     return () => clearInterval(id);
   }, [state.isRunning, state.phaseEndAt]);
 
+  // derivedTimeRemaining reads only from state — no Date.now() during render
   const derivedTimeRemaining = useMemo(() => {
-    const method = getMethodById(state.methodId);
-    if (state.isRunning && state.phaseEndAt != null) {
-      return Math.max(0, Math.ceil((state.phaseEndAt - Date.now()) / 1000));
+    if (state.isRunning && state.displayRemainingSec != null) {
+      return state.displayRemainingSec;
     }
     if (state.phaseRemainingSec != null) {
       return state.phaseRemainingSec;
     }
-    return phaseSeconds(state.phase, method);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return phaseSeconds(state.phase, getMethodById(state.methodId));
   }, [state]);
 
   const setSubject = useCallback((value) => {
@@ -191,6 +191,7 @@ export function TimerProvider({ children }) {
       phase: "focus",
       phaseEndAt: null,
       phaseRemainingSec: phaseSeconds("focus", method),
+      displayRemainingSec: null,
     }));
   }, []);
 
@@ -218,6 +219,7 @@ export function TimerProvider({ children }) {
       isRunning: true,
       phaseEndAt: Date.now() + remaining * 1000,
       phaseRemainingSec: null,
+      displayRemainingSec: remaining,
     }));
   }, []);
 
@@ -236,6 +238,7 @@ export function TimerProvider({ children }) {
       isRunning: false,
       phaseEndAt: null,
       phaseRemainingSec: remaining,
+      displayRemainingSec: null,
     }));
   }, []);
 
@@ -252,6 +255,7 @@ export function TimerProvider({ children }) {
       phase: "focus",
       phaseEndAt: null,
       phaseRemainingSec: phaseSeconds("focus", method),
+      displayRemainingSec: null,
     }));
   }, []);
 
@@ -270,6 +274,7 @@ export function TimerProvider({ children }) {
       phase: "focus",
       phaseEndAt: null,
       phaseRemainingSec: phaseSeconds("focus", method),
+      displayRemainingSec: null,
       subject: "",
       sessionName: "",
       lastLoggedSession: logged,
@@ -319,19 +324,4 @@ export function TimerProvider({ children }) {
   );
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
-}
-
-export function useTimer() {
-  const ctx = useContext(TimerContext);
-  if (!ctx) {
-    throw new Error("useTimer must be used within a TimerProvider");
-  }
-  return ctx;
-}
-
-export function formatSeconds(totalSeconds) {
-  const safe = Math.max(0, totalSeconds);
-  const minutes = Math.floor(safe / 60);
-  const seconds = safe % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }

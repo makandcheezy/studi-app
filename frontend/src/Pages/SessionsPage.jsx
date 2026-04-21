@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createSession, getSessions } from "../services/api";
 import StudyMethodTimer from "../components/StudyMethodTimer.jsx";
-import { useTimer } from "../context/TimerContext";
+import { useTimer } from "../context/timerUtils";
 import "./SessionsPage.css";
 
 const HOUR_OPTIONS = Array.from({ length: 13 }, (_, index) => index);
@@ -49,8 +49,10 @@ export default function SessionsPage() {
         savedLocations[lastLoggedSession._id] ||
         "",
     };
-    setSessions((prev) => [sessionWithLocation, ...prev]);
-    clearLastLogged();
+    Promise.resolve().then(() => {
+      setSessions((prev) => [sessionWithLocation, ...prev]);
+      clearLastLogged();
+    });
   }, [lastLoggedSession, clearLastLogged]);
   const handleManualAdd = async (e) => {
     e.preventDefault();
