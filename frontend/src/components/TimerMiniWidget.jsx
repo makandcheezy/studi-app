@@ -1,6 +1,6 @@
 // floating timer pill shown on every tab while a session is active
 import { useNavigate } from "react-router-dom";
-import { formatSeconds, useTimer } from "../context/TimerContext";
+import { formatSeconds, useTimer } from "../context/timerUtils";
 import "./TimerMiniWidget.css";
 
 export default function TimerMiniWidget() {

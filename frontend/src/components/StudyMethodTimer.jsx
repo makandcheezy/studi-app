@@ -3,7 +3,7 @@ import {
   STUDY_METHODS,
   formatSeconds,
   useTimer,
-} from "../context/TimerContext";
+} from "../context/timerUtils";
 
 function formatMethodDuration(minutesValue) {
   if (minutesValue < 1) {
