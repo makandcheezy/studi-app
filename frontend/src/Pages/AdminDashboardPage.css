@@ -1,0 +1,150 @@
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 24px;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px 2px;
+}
+
+.admin-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #2e7d71;
+  margin: 0;
+}
+
+.admin-logout-btn {
+  background: none;
+  border: 1px solid #2e7d71;
+  border-radius: 20px;
+  color: #2e7d71;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.admin-logout-btn:hover {
+  background: #2e7d71;
+  color: white;
+}
+
+.admin-loading,
+.admin-error {
+  text-align: center;
+  color: #6e7b87;
+  padding: 40px 0;
+  font-size: 0.95rem;
+}
+
+.admin-error {
+  color: #c0392b;
+}
+
+/* 2×2 metrics grid */
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.admin-metric-card {
+  background: white;
+  border: 1px solid #e8efee;
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: #6e7b87;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a2e2b;
+  margin: 0;
+}
+
+/* section cards */
+.admin-card {
+  background: white;
+  border: 1px solid #e8efee;
+  border-radius: 18px;
+  padding: 18px 20px;
+}
+
+.admin-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a2e2b;
+  margin: 0 0 14px;
+}
+
+/* avg session stat inside a card */
+.admin-stat-block .metric-label {
+  font-size: 0.85rem;
+}
+
+.admin-stat-block .metric-value {
+  font-size: 1.8rem;
+}
+
+/* top users list */
+.admin-top-users {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-top-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-user-rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e8efee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #2e7d71;
+  flex-shrink: 0;
+}
+
+.top-user-name {
+  font-weight: 600;
+  color: #1a2e2b;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.top-user-stats {
+  font-size: 0.82rem;
+  color: #6e7b87;
+}
+
+.admin-empty {
+  color: #6e7b87;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px 0;
+}

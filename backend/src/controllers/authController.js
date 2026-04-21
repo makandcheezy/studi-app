@@ -2,6 +2,7 @@
 const { validationResult } = require('express-validator');
 const authService = require('../services/authService');
 const AppError = require('../utils/AppError');
+const User = require('../models/User');
 
 function checkValidation(req) {
   const errors = validationResult(req);
@@ -42,6 +43,7 @@ const loginUser = async (req, res, next) => {
     checkValidation(req);
     const { email, password } = req.body;
     const { user, accessToken, refreshToken } = await authService.loginUser({ email, password });
+    User.findByIdAndUpdate(user._id, { lastLoginAt: new Date() }).catch(() => {});
     res.status(200).json({
       success: true,
       data: { accessToken, refreshToken, user: safeUser(user) },

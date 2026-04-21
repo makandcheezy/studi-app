@@ -5,6 +5,16 @@ export const getToken = () => localStorage.getItem("studi_token");
 export const setToken = (token) => localStorage.setItem("studi_token", token);
 export const removeToken = () => localStorage.removeItem("studi_token");
 
+export function getTokenRole() {
+  const token = localStorage.getItem("studi_token");
+  if (!token) return null;
+  try {
+    return JSON.parse(atob(token.split(".")[1])).role;
+  } catch {
+    return null;
+  }
+}
+
 export const getRefreshToken = () => localStorage.getItem("studi_refresh_token");
 export const setRefreshToken = (token) =>
   localStorage.setItem("studi_refresh_token", token);
@@ -148,3 +158,7 @@ export const declineFriendRequest = (friendshipId) =>
 
 export const removeFriend = (friendshipId) =>
   request(`/friends/${friendshipId}`, "DELETE");
+
+// ---- ADMIN ----
+export const getAdminMetrics = () => request("/admin/metrics");
+export const getAdminAnalytics = () => request("/admin/analytics");
